@@ -1,13 +1,28 @@
 import certstream
 import tldextract
+import pika
+
+connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+channel = connection.channel()
+
+channel.queue_declare(queue = 'domain_queue')
+channel.queue_declare(queue = 'extracted_domain_queue')
 
 def print_callback(message, context):
-    all_domains = message['data']['leaf_cert']['all_domains']
+    domain = message['data']['leaf_cert']['all_domains'][0]
     
-    for domain in all_domains:
-        extracted = tldextract.extract(domain)
+    extracted_domain = tldextract.extract(domain).domain
 
-        print(domain)
-        print(extracted.domain)
+    channel.basic_publish(exchange = '',
+                          routing_key = 'domain_queue',
+                          body = domain)
 
-certstream.listen_for_events(print_callback, 'wss://certstream.calidog.io')
+    channel.basic_publish(exchange = '',
+                          routing_key = 'extracted_domain_queue',
+                          body = extracted_domain)
+
+try:
+    certstream.listen_for_events(print_callback, 'wss://certstream.calidog.io')
+
+finally:
+    connection.close()
