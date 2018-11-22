@@ -1,6 +1,7 @@
 import pika
 import logging
 import random
+import json
 
 logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
 
@@ -25,6 +26,8 @@ logging.info('Creating message queue')
 
 channel.queue_declare(queue = 'domain')
 
+channel.queue_declare(queue = 'domain_name_score')
+
 def callback(ch, method, properties, body):
     log_domain = body.decode('utf-8')
 
@@ -37,8 +40,18 @@ def callback(ch, method, properties, body):
         message['log_domain'] = log_domain
         message['domain_score'] = random.randrange(101)
 
+        channel.basic_publish(exchange = '',
+                              routing_key = 'domain_name_score',
+                              body = json.dumps(message))
+
 channel.basic_consume(callback, queue = 'domain', no_ack = True)
 
-logging.info('Starting domain name scorer')
+try:
+    logging.info('Starting domain name scorer')
 
-channel.start_consuming()
+    channel.start_consuming()
+
+finally:
+    logging.info('Closing message queue connection')
+
+    connection.close()
