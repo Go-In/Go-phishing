@@ -26,7 +26,7 @@ logging.info('Creating message queue')
 
 channel.queue_declare(queue = 'domain')
 
-channel.queue_declare(queue = 'domain_name_score')
+channel.queue_declare(queue = 'score')
 
 def callback(ch, method, properties, body):
     log_domain = body.decode('utf-8')
@@ -36,12 +36,13 @@ def callback(ch, method, properties, body):
     for target_domain in target_domain_list:
         message = {}
 
+        message['type'] = 1
         message['target_domain'] = target_domain
         message['log_domain'] = log_domain
         message['domain_score'] = random.randrange(101)
 
         channel.basic_publish(exchange = '',
-                              routing_key = 'domain_name_score',
+                              routing_key = 'score',
                               body = json.dumps(message))
 
 channel.basic_consume(callback, queue = 'domain', no_ack = True)
