@@ -8,7 +8,8 @@ try:
 
     target_domain_file = open('../data/target_domain.txt', 'r')
 
-    target_domain_list = target_domain_file.readlines()
+    target_domain_list = target_domain_file.read().splitlines()
+
 finally:
     logging.info('Closing target domain list')
 
