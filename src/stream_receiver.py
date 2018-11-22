@@ -1,17 +1,26 @@
 import certstream
 import tldextract
 import pika
+import logging
+
+logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
+
+logging.info('Connecting to message queue broker')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+logging.info('Creating message queue')
+
 channel.queue_declare(queue = 'domain')
 channel.queue_declare(queue = 'extracted_domain')
 
-def print_callback(message, context):
+def callback(message, context):
     domain = message['data']['leaf_cert']['all_domains'][0]
     
     extracted_domain = tldextract.extract(domain).domain
+
+    logging.info('Got {}'.format(domain))
 
     channel.basic_publish(exchange = '',
                           routing_key = 'domain',
@@ -22,7 +31,11 @@ def print_callback(message, context):
                           body = extracted_domain)
 
 try:
-    certstream.listen_for_events(print_callback, 'wss://certstream.calidog.io')
+    logging.info('Starting CertStream receiver')
+
+    certstream.listen_for_events(callback, 'wss://certstream.calidog.io')
 
 finally:
+    logging.info('Closing message queue connection')
+
     connection.close()

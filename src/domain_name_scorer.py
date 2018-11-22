@@ -1,13 +1,22 @@
 import pika
+import logging
+
+logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
+
+logging.info('Connecting to message queue broker')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
+logging.info('Creating message queue')
+
 channel.queue_declare(queue = 'domain')
 
 def callback(ch, method, properties, body):
-    print('receive: ' + body.decode('utf-8'))
+    logging.info('Got {}'.format(body.decode('utf-8')))
 
 channel.basic_consume(callback, queue = 'domain', no_ack = True)
+
+logging.info('Starting domain name scorer')
 
 channel.start_consuming()
