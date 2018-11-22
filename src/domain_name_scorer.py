@@ -3,6 +3,17 @@ import logging
 
 logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
 
+try:
+    logging.info('Reading target domain list')
+
+    target_domain_file = open('../data/target_domain.txt', 'r')
+
+    target_domain_list = target_domain_file.readlines()
+finally:
+    logging.info('Closing target domain list')
+
+    target_domain_file.close()
+
 logging.info('Connecting to message queue broker')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
