@@ -17,16 +17,22 @@ finally:
 
     target_domain_file.close()
 
-logging.info('Connecting to message queue broker')
+logging.info('Connecting to message broker')
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
 
-logging.info('Creating message queue')
+logging.info('Creating exchange and message queue')
 
-channel.queue_declare(queue = 'domain')
+channel.exchange_declare(exchange = 'domain', exchange_type = 'fanout')
+
+domain_queue = channel.queue_declare(exclusive = True)
 
 channel.queue_declare(queue = 'score')
+
+domain_queue_name = domain_queue.method.queue
+
+channel.queue_bind(exchange = 'domain', queue = domain_queue_name)
 
 def callback(ch, method, properties, body):
     log_domain = body.decode('utf-8')
@@ -45,7 +51,7 @@ def callback(ch, method, properties, body):
                               routing_key = 'score',
                               body = json.dumps(message))
 
-channel.basic_consume(callback, queue = 'domain', no_ack = True)
+channel.basic_consume(callback, queue = domain_queue_name, no_ack = True)
 
 try:
     logging.info('Starting domain name scorer')
@@ -53,6 +59,6 @@ try:
     channel.start_consuming()
 
 finally:
-    logging.info('Closing message queue connection')
+    logging.info('Closing message broker connection')
 
     connection.close()
