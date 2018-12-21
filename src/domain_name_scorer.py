@@ -1,7 +1,7 @@
 import pika
 import logging
-import random
 import json
+import nltk
 
 logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
 
@@ -39,7 +39,7 @@ def callback(ch, method, properties, body):
         message['type'] = 1
         message['target_domain'] = target_domain
         message['log_domain'] = log_domain
-        message['domain_score'] = random.randrange(101)
+        message['domain_score'] = (nltk.jaccard_distance(set(log_domain), set(target_domain))) * 100
 
         channel.basic_publish(exchange = '',
                               routing_key = 'score',
