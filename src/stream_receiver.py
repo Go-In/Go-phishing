@@ -1,5 +1,4 @@
 import certstream
-import tldextract
 import pika
 import logging
 
@@ -17,8 +16,6 @@ channel.exchange_declare(exchange = 'domain', exchange_type = 'fanout')
 def callback(message, context):
     domain = message['data']['leaf_cert']['all_domains'][0]
     
-    extracted_domain = tldextract.extract(domain).domain
-
     logging.info('Got {}'.format(domain))
 
     channel.basic_publish(exchange = 'domain', routing_key = '', body = domain)

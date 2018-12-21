@@ -2,6 +2,7 @@ import pika
 import logging
 import json
 import nltk
+import tldextract
 
 logging.basicConfig(format='[%(levelname)s:%(name)s] %(asctime)s - %(message)s', level=logging.INFO)
 
@@ -42,10 +43,13 @@ def callback(ch, method, properties, body):
     for target_domain in target_domain_list:
         message = {}
 
+        extracted_log_domain = tldextract.extract(log_domain).domain
+        extracted_target_domain = tldextract.extract(target_domain).domain
+
         message['type'] = 1
         message['target_domain'] = target_domain
         message['log_domain'] = log_domain
-        message['domain_score'] = (nltk.jaccard_distance(set(log_domain), set(target_domain))) * 100
+        message['domain_score'] = (nltk.jaccard_distance(set(extracted_log_domain), set(extracted_target_domain))) * 100
 
         channel.basic_publish(exchange = '',
                               routing_key = 'score',
