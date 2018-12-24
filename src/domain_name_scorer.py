@@ -51,8 +51,6 @@ def callback(ch, method, properties, body):
         message['log_domain'] = log_domain
         message['domain_score'] = (1 - (nltk.jaccard_distance(set(extracted_log_domain), set(extracted_target_domain)))) * 100
 
-        logging.info('{}'.format(message['domain_score']))
-
         channel.basic_publish(exchange = '',
                               routing_key = 'score',
                               body = json.dumps(message))

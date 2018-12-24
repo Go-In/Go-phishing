@@ -41,8 +41,6 @@ def callback(ch, method, properties, body):
     extracted_tld = tldextract.extract(log_domain)
 
     try:
-        logging.info('{}'.format(extracted_tld.domain + '.' + extracted_tld.suffix))
-
         browser.get('https://' + extracted_tld.domain + '.' + extracted_tld.suffix)
 
         screenshot = browser.save_screenshot('../screenshot/' + extracted_tld.domain + '.png')
