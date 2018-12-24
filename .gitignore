@@ -1,4 +1,4 @@
 *.swp
 data/
-src/geckodriver.log
+geckodriver.log
 screenshot/
