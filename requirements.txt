@@ -15,5 +15,5 @@ certstream==1.10
 pika==0.12.0
 tldextract==2.2.0
 nltk==3.4
-PyVirtualDisplay=0.2.1
-selenium=3.141.0
+PyVirtualDisplay==0.2.1
+selenium==3.141.0
